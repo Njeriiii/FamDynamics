@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Dynamics Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <header>
+            <h1>Family Dynamics Analyzer</h1>
+            <p>Explore and understand your family relationships through conversation</p>
+        </header>
+        
+        <div class="chat-history" id="chat-history">
+            <!-- Messages will appear here -->
+        </div>
+        
+        <div class="input-container">
+            <div class="voice-instructions">
+                <p id="voice-prompt">Click the microphone button to speak</p>
+            </div>
+            
+            <div class="chat-input">
+                <textarea id="user-message" placeholder="Type your message here or use the microphone to speak..."></textarea>
+                <div class="input-buttons">
+                    <button id="voice-button" title="Click to speak">🎤</button>
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
