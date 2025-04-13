@@ -17,6 +17,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key_for_testing")
 # Set session to be permanent with a longer lifetime
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=24)
+# app.config['SESSION_TYPE'] = 'filesystem' # TODO: Configure to allow new session creation
 
 # Initialize conversation sessions dictionary
 # Using a global variable for sessions (consider a proper DB for production)
@@ -124,7 +125,7 @@ def save_conversation():
         # Save the conversation data
         # result = sessions[session_id].save_conversation(user_id)
         result = sessions[session_id].save_conversation(1)
-
+        print(f"Result: {result}")
         return jsonify(result)
 
     except Exception as e:

@@ -253,23 +253,15 @@ class FamilyDynamicsConversation:
 
             # Prepare the data to save
             data = {
-                "family_data": extracted_data,
+                "extracted_data": extracted_data,
                 "phase": self.current_phase,
                 "last_updated": datetime.now().isoformat(),
             }
-
-            # # Save to storage
-            # success = self.storage_manager.save_data(user_id, data)
-
-            # Generate a summary for the user
-            summary = self.data_extractor.get_summary()
-
-            print("Conversation summary:", summary)
             print("extracted_data:", extracted_data)
 
             return {
                 # "success": success,
-                "summary": summary,
+                "data": data,
                 "extraction_status": "complete" if extracted_data else "no_data_found",
             }
 

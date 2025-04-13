@@ -1,7 +1,7 @@
 # modules/data_extractor.py
 import logging
 import json
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any
 import os
 
 class FamilyDataExtractor:
@@ -274,85 +274,6 @@ class FamilyDataExtractor:
             The complete family data structure
         """
         return self.family_data
-
-    def get_summary(self) -> str:
-        """
-        Generate a human-readable summary of the family data.
-
-        Returns:
-            Text summary of key family information
-        """
-        summary = []
-
-        # Summarize family members
-        if self.family_data["family_members"]:
-            members_summary = "Family members include "
-            member_texts = []
-
-            for member in self.family_data["family_members"]:
-                text = ""
-                if "name" in member:
-                    text += member["name"]
-                if "role" in member:
-                    if text:
-                        text += f" ({member['role']})"
-                    else:
-                        text = member["role"]
-                if "age" in member:
-                    text += f", {member['age']}"
-
-                if text:
-                    member_texts.append(text)
-
-            if member_texts:
-                members_summary += ", ".join(member_texts) + "."
-                summary.append(members_summary)
-
-        # Summarize key relationships
-        if self.family_data["relationships"]:
-            rel_summary = "Key relationships: "
-            rel_texts = []
-
-            for rel in self.family_data["relationships"][:3]:  # Limit to top 3
-                if "type" in rel and "members" in rel:
-                    rel_texts.append(
-                        f"{rel['type']} between {' and '.join(rel['members'])}"
-                    )
-
-            if rel_texts:
-                rel_summary += ", ".join(rel_texts) + "."
-                summary.append(rel_summary)
-
-        # Summarize key dynamics
-        if self.family_data["dynamics"]:
-            dyn_summary = "Notable dynamics: "
-            dyn_texts = []
-
-            for dyn in self.family_data["dynamics"][:3]:  # Limit to top 3
-                if "pattern" in dyn:
-                    dyn_texts.append(dyn["pattern"])
-
-            if dyn_texts:
-                dyn_summary += ", ".join(dyn_texts) + "."
-                summary.append(dyn_summary)
-
-        # Summarize significant events
-        if self.family_data["events"]:
-            event_summary = "Significant events: "
-            event_texts = []
-
-            for event in self.family_data["events"][:3]:  # Limit to top 3
-                if "description" in event:
-                    event_texts.append(event["description"])
-
-            if event_texts:
-                event_summary += ", ".join(event_texts) + "."
-                summary.append(event_summary)
-
-        if not summary:
-            return "No family information collected yet."
-
-        return " ".join(summary)
 
     def set_data(self, data: Dict[str, Any]) -> None:
         """
