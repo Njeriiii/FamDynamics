@@ -99,6 +99,38 @@ def chat():
         )
 
 
+@app.route("/api/save", methods=["POST"])
+def save_conversation():
+    """Explicitly save the conversation data."""
+
+    session_id = session.get("session_id")
+    logger.info(f"Chat endpoint - Session ID: {session_id}")
+
+    try:
+        # Ensure user has a session ID
+        if not session_id:
+            logger.warning("No session ID found in request")
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "No active conversation found",
+                        "redirect": True,  # Signal to client to redirect to starting page
+                    }
+                ),
+                404,
+            )
+
+        # Save the conversation data
+        # result = sessions[session_id].save_conversation(user_id)
+        result = sessions[session_id].save_conversation(1)
+
+        return jsonify(result)
+
+    except Exception as e:
+        logging.error(f"Error saving conversation: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/api/reset", methods=["POST"])
 def reset_conversation():
     """Reset the current conversation."""

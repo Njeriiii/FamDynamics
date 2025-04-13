@@ -150,3 +150,160 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('Speech recognition not supported');
     }
 });
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize the Save Conversation button
+    initializeSaveButton();
+});
+
+function initializeSaveButton() {
+    // Create the save button container
+    const saveButtonContainer = document.createElement('div');
+    saveButtonContainer.className = 'save-button-container';
+    
+    // Create the save button
+    const saveButton = document.createElement('button');
+    saveButton.id = 'save-conversation-button';
+    saveButton.className = 'save-button';
+    saveButton.innerHTML = '💾 Save Conversation';
+    saveButton.title = 'Extract and save data from this conversation';
+    
+    // Add button to container
+    saveButtonContainer.appendChild(saveButton);
+    
+    // Add container to the page - before the input container
+    const inputContainer = document.querySelector('.input-container');
+    inputContainer.parentNode.insertBefore(saveButtonContainer, inputContainer);
+    
+    // Add save status indicator
+    const saveStatus = document.createElement('span');
+    saveStatus.id = 'save-status';
+    saveStatus.className = 'save-status';
+    saveButtonContainer.appendChild(saveStatus);
+    
+    // Add event listener
+    saveButton.addEventListener('click', saveConversation);
+}
+
+function saveConversation() {
+    // Show saving indicator
+    const saveButton = document.getElementById('save-conversation-button');
+    const saveStatus = document.getElementById('save-status');
+    const originalText = saveButton.innerHTML;
+    
+    saveButton.disabled = true;
+    saveButton.innerHTML = '⏳ Saving...';
+    saveStatus.textContent = '';
+    saveStatus.className = 'save-status';
+    
+    // Call the API to save the conversation
+    fetch('/api/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => {
+    console.log('Responseee:', response);
+    return response.json();
+    })
+    .then(data => {
+        // Reset button
+        saveButton.innerHTML = originalText;
+        saveButton.disabled = false;
+
+        console.log('Save response:', data);
+        
+        if (data.extraction_status == 'complete') {
+            // Show success status
+            saveStatus.textContent = '✓ Saved';
+            saveStatus.className = 'save-status success';
+            
+            // Display extracted information summary
+            if (data.summary) {
+                showExtractionSummary(data.summary);
+            }
+        } else {
+            // Show error status
+            saveStatus.textContent = '✗ Failed';
+            saveStatus.className = 'save-status error';
+            
+            // Handle redirect case (no active conversation)
+            if (data.redirect) {
+                window.location.reload();
+            }
+            
+            console.error('Save failed:', data.error);
+        }
+        
+        // Clear status after a delay
+        setTimeout(() => {
+            saveStatus.textContent = '';
+        }, 5000);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        saveButton.innerHTML = originalText;
+        saveButton.disabled = false;
+        
+        saveStatus.textContent = '✗ Error';
+        saveStatus.className = 'save-status error';
+        
+        // Clear status after a delay
+        setTimeout(() => {
+            saveStatus.textContent = '';
+        }, 5000);
+    });
+}
+
+function showExtractionSummary(summary) {
+    // Create a summary dialog
+    const overlay = document.createElement('div');
+    overlay.className = 'summary-overlay';
+    
+    const dialog = document.createElement('div');
+    dialog.className = 'summary-dialog';
+    
+    const dialogContent = document.createElement('div');
+    dialogContent.className = 'summary-content';
+    
+    // Add header
+    const header = document.createElement('h3');
+    header.textContent = 'Extracted Information Summary';
+    dialogContent.appendChild(header);
+    
+    // Add summary text
+    const summaryText = document.createElement('p');
+    summaryText.textContent = summary;
+    dialogContent.appendChild(summaryText);
+    
+    // Add explanation
+    const explanation = document.createElement('p');
+    explanation.className = 'summary-explanation';
+    explanation.textContent = 'This information has been saved and will be available when you return to the conversation.';
+    dialogContent.appendChild(explanation);
+    
+    // Add close button
+    const closeButton = document.createElement('button');
+    closeButton.className = 'summary-close-button';
+    closeButton.textContent = 'Close';
+    dialogContent.appendChild(closeButton);
+    
+    // Assemble the dialog
+    dialog.appendChild(dialogContent);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+    
+    // Add event listener to close button
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(overlay);
+    });
+    
+    // Also close when clicking the overlay
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            document.body.removeChild(overlay);
+        }
+    });
+}

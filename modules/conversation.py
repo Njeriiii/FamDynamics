@@ -1,7 +1,9 @@
 # modules/conversation.py
 import os
-import requests
 import logging
+from modules.data_extractor import FamilyDataExtractor
+from typing import Dict, Any
+from datetime import datetime
 
 class FamilyDynamicsConversation:
     """
@@ -17,7 +19,9 @@ class FamilyDynamicsConversation:
         logging.info("self.api_key: %s", self.api_key)
         if not self.api_key:
             raise ValueError("API key not configured. Please set the ANTHROPIC_API_KEY environment variable.")
-        self.api_url = "https://api.anthropic.com/v1/messages"
+
+        # Extract family data from user input
+        self.data_extractor = FamilyDataExtractor()
 
         # Add initial system message to guide the LLM
         self._add_system_message(self._get_system_prompt())
@@ -228,3 +232,47 @@ class FamilyDynamicsConversation:
             logging.error(f"Error calling Claude API: {e}")
             return "Sorry, I encountered an error while processing your message. " \
                     "Please check the API key configuration or try again later."
+
+    def save_conversation(self, user_id: str) -> Dict[str, Any]:
+        """
+        Extract data from the conversation and save it to storage.
+        This is called explicitly when the user presses "Save Conversation".
+
+        Args:
+            user_id: Unique identifier for the user
+
+        Returns:
+            Dictionary with extraction results and save status
+        """
+        print("At the start of save_conversation")
+        try:
+            # Extract data from the full conversation
+            extracted_data = self.data_extractor.extract_from_conversation(
+                self.conversation_history
+            )
+
+            # Prepare the data to save
+            data = {
+                "family_data": extracted_data,
+                "phase": self.current_phase,
+                "last_updated": datetime.now().isoformat(),
+            }
+
+            # # Save to storage
+            # success = self.storage_manager.save_data(user_id, data)
+
+            # Generate a summary for the user
+            summary = self.data_extractor.get_summary()
+
+            print("Conversation summary:", summary)
+            print("extracted_data:", extracted_data)
+
+            return {
+                # "success": success,
+                "summary": summary,
+                "extraction_status": "complete" if extracted_data else "no_data_found",
+            }
+
+        except Exception as e:
+            logging.error(f"Error saving conversation data: {e}")
+            return {"success": False, "error": str(e), "extraction_status": "failed"}
