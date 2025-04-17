@@ -17,7 +17,6 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev_key_for_testing")
 # Set session to be permanent with a longer lifetime
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=24)
-# app.config['SESSION_TYPE'] = 'filesystem' # TODO: Configure to allow new session creation
 
 # Initialize conversation sessions dictionary
 # Using a global variable for sessions (consider a proper DB for production)
@@ -105,7 +104,7 @@ def save_conversation():
     """Explicitly save the conversation data."""
 
     session_id = session.get("session_id")
-    logger.info(f"Chat endpoint - Session ID: {session_id}")
+    logger.info(f"Save endpoint - Session ID: {session_id}")
 
     try:
         # Ensure user has a session ID
@@ -123,14 +122,54 @@ def save_conversation():
             )
 
         # Save the conversation data
-        # result = sessions[session_id].save_conversation(user_id)
-        result = sessions[session_id].save_conversation(1)
-        print(f"Result: {result}")
+        result = sessions[session_id].save_conversation(session_id)
+        logger.info(f"Save result: {result}")
         return jsonify(result)
 
     except Exception as e:
         logging.error(f"Error saving conversation: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/load_context", methods=["POST"])
+def load_context():
+    """
+    Load saved conversation data into the current session.
+    This endpoint is called by the frontend when saved data is detected.
+    """
+    session_id = session.get("session_id")
+    logger.info(f"Load context endpoint - Session ID: {session_id}")
+
+    try:
+        # Get the saved data from the request
+        data = request.json
+        saved_data = data.get("saved_data")
+
+        if not saved_data:
+            logger.warning("No saved data provided in request")
+            return jsonify({"success": False, "error": "No saved data provided"})
+
+        logger.info(f"Loading saved data into session {session_id}")
+
+        # Create a new conversation with the saved data
+        sessions[session_id] = FamilyDynamicsConversation(saved_data=saved_data)
+
+        # Get the initial greeting which will be personalized
+        response = sessions[session_id].process_user_input("__init__")
+
+        return jsonify(
+            {
+                "success": True,
+                "message": "Context loaded successfully",
+                "response": response,
+                "phase": sessions[session_id].current_phase,
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error loading context: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route("/api/reset", methods=["POST"])
 def reset_conversation():

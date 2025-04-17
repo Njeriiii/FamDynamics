@@ -2,7 +2,7 @@
 import os
 import logging
 from modules.data_extractor import FamilyDataExtractor
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from datetime import datetime
 
 class FamilyDynamicsConversation:
@@ -11,20 +11,169 @@ class FamilyDynamicsConversation:
     Handles conversation state, history, and LLM interactions.
     """
 
-    def __init__(self):
-        """Initialize a new conversation session."""
+    def __init__(self, saved_data: Optional[Dict[str, Any]] = None):
+        """
+        Initialize a new conversation session.
+
+        Args:
+            saved_data: Optional previously saved data to restore conversation context
+        """
         self.conversation_history = []
         self.current_phase = "initial_data_collection"
         self.api_key = os.environ.get("ANTHROPIC_API_KEY")
-        logging.info("self.api_key: %s", self.api_key)
+        logging.info("Initializing conversation")
+
         if not self.api_key:
-            raise ValueError("API key not configured. Please set the ANTHROPIC_API_KEY environment variable.")
+            raise ValueError(
+                "API key not configured. Please set the ANTHROPIC_API_KEY environment variable."
+            )
 
         # Extract family data from user input
         self.data_extractor = FamilyDataExtractor()
 
+        # Set saved data if provided
+        self.saved_data = None
+        if saved_data:
+            self.load_saved_data(saved_data)
+
         # Add initial system message to guide the LLM
-        self._add_system_message(self._get_system_prompt())
+        system_prompt = self._get_system_prompt()
+
+        # Add context from saved data if available
+        if self.saved_data:
+            system_prompt = self._enhance_prompt_with_saved_data(system_prompt)
+            # Update phase if available
+            if "phase" in self.saved_data:
+                self.current_phase = self.saved_data["phase"]
+
+        self._add_system_message(system_prompt)
+
+    def _enhance_prompt_with_saved_data(self, base_prompt: str) -> str:
+        """
+        Enhance the system prompt with previously saved conversation data.
+
+        Args:
+            base_prompt: The original system prompt
+
+        Returns:
+            Enhanced prompt with previously saved context
+        """
+        if not self.saved_data or not self.saved_data.get("extracted_data"):
+            return base_prompt
+
+        # Get the extracted data
+        extracted_data = self.saved_data.get("extracted_data", {})
+
+        # Build context section based on saved data
+        context_sections = []
+
+        # Add family members if available
+        family_members = extracted_data.get("family_members", [])
+        if family_members:
+            member_details = []
+            for member in family_members:
+                details = []
+                if member.get("name"):
+                    details.append(f"name: {member['name']}")
+                if member.get("role"):
+                    details.append(f"role: {member['role']}")
+                if member.get("age"):
+                    details.append(f"age: {member['age']}")
+                if member.get("attributes"):
+                    attrs = ", ".join(member["attributes"])
+                    details.append(f"attributes: {attrs}")
+
+                if details:
+                    member_details.append(" - " + "; ".join(details))
+
+            if member_details:
+                context_sections.append("FAMILY MEMBERS:\n" + "\n".join(member_details))
+
+        # Add relationships if available
+        relationships = extracted_data.get("relationships", [])
+        if relationships:
+            rel_details = []
+            for rel in relationships:
+                details = []
+                if rel.get("type"):
+                    details.append(f"type: {rel['type']}")
+                if rel.get("members"):
+                    members = ", ".join(rel["members"])
+                    details.append(f"between: {members}")
+                if rel.get("quality"):
+                    details.append(f"quality: {rel['quality']}")
+
+                if details:
+                    rel_details.append(" - " + "; ".join(details))
+
+            if rel_details:
+                context_sections.append("RELATIONSHIPS:\n" + "\n".join(rel_details))
+
+        # Add dynamics if available
+        dynamics = extracted_data.get("dynamics", [])
+        if dynamics:
+            dyn_details = []
+            for dyn in dynamics:
+                if dyn.get("type") and dyn.get("pattern"):
+                    dyn_details.append(f" - {dyn['type']}: {dyn['pattern']}")
+
+            if dyn_details:
+                context_sections.append("DYNAMICS:\n" + "\n".join(dyn_details))
+
+        # Add events if available
+        events = extracted_data.get("events", [])
+        if events:
+            event_details = []
+            for event in events:
+                if event.get("type") and event.get("description"):
+                    event_details.append(f" - {event['type']}: {event['description']}")
+
+            if event_details:
+                context_sections.append(
+                    "SIGNIFICANT EVENTS:\n" + "\n".join(event_details)
+                )
+
+        # Combine all sections into a context block
+        if context_sections:
+            context_block = (
+                """
+        IMPORTANT: The user is returning to a previous conversation. Here is what we know about their family:
+        
+        """
+                + "\n\n".join(context_sections)
+                + """
+        
+        Based on this information, acknowledge their return and ask a relevant follow-up question about 
+        something specific from the information above. Do not overwhelm them with all these details at once.
+        Focus on one area they might want to explore further.
+        """
+            )
+            # Add the context block before the base prompt
+            enhanced_prompt = context_block + "\n\n" + base_prompt
+            return enhanced_prompt
+
+        return base_prompt
+
+    def load_saved_data(self, saved_data: Dict[str, Any]) -> None:
+        """
+        Load saved data from a previous conversation.
+
+        Args:
+            saved_data: Dictionary containing saved conversation data
+        """
+        logging.info("Loading saved data into conversation")
+        self.saved_data = saved_data
+
+        # Update current phase if available
+        if "phase" in saved_data:
+            self.current_phase = saved_data["phase"]
+            logging.info(f"Restored conversation phase: {self.current_phase}")
+
+        # If we have extracted data, update the data extractor
+        if "extracted_data" in saved_data:
+            extracted_data = saved_data["extracted_data"]
+            self.data_extractor.set_data(extracted_data)
+            logging.info("Restored extracted family data")
 
     def _get_system_prompt(self):
         """Return the system prompt for Claude with guidance to reference psychological theories and books."""
@@ -113,16 +262,13 @@ class FamilyDynamicsConversation:
 
     def _add_system_message(self, content):
         """Add a system message to the conversation history."""
-        print("At the start of _add_system_message")
         self.conversation_history.append({"role": "system", "content": content})
 
     def _add_user_message(self, content):
         """Add a user message to the conversation history."""
-        print("At the start of _add_user_message")
         self.conversation_history.append({"role": "user", "content": content})
 
     def _add_assistant_message(self, content):
-        print("At the start of _add_assistant_message")
         """Add an assistant message to the conversation history."""
         self.conversation_history.append({"role": "assistant", "content": content})
 
@@ -136,11 +282,17 @@ class FamilyDynamicsConversation:
         Returns:
             str: Claude's response
         """
-        print("At the start of process_user_input")
         # Special case for initialization
         if user_input == "__init__":
-            response = "Hello! I'm here to help you explore and understand your family dynamics. " \
-            "Let's start by learning about your family members. Could you tell me who makes up your immediate family?"
+            # If we have saved data, create a personalized welcome back message
+            if self.saved_data:
+                response = self._generate_welcome_back_message()
+            else:
+                response = (
+                    "Hello! I'm here to help you explore and understand your family dynamics. "
+                    "Let's start by learning about your family members. Could you tell me who makes up your immediate family?"
+                )
+
             self._add_assistant_message(response)
             return response
 
@@ -158,15 +310,70 @@ class FamilyDynamicsConversation:
 
         return response
 
+    def _generate_welcome_back_message(self):
+        """
+        Let Claude generate a personalized welcome back message based on saved data.
+        Uses the conversation context already loaded with family information.
+
+        Returns:
+            str: Welcome back message from Claude
+        """
+        try:
+            # We'll use Claude to generate the welcome message
+            # Create a special prompt for this purpose
+            welcome_prompt = {
+                "role": "user",
+                "content": (
+                    "This is the start of a new conversation with a returning user. "
+                    "Please create a warm, personalized welcome back message that acknowledges "
+                    "what we've discussed before about their family. "
+                    "End with a thoughtful question that encourages them to continue exploring their family dynamics. "
+                    "Your message should be conversational and not too long (3-4 sentences maximum)."
+                ),
+            }
+
+            # Extract system message and existing conversation context
+            system_content = None
+            api_messages = []
+
+            for msg in self.conversation_history:
+                if msg["role"] == "system":
+                    system_content = msg["content"]
+                    # We already have the system message with family context
+                    break
+
+            # Initialize Anthropic client
+            from anthropic import Anthropic
+
+            anthropic = Anthropic(api_key=self.api_key)
+
+            # Call Claude for a welcome message
+            message = anthropic.messages.create(
+                model="claude-3-7-sonnet-20250219",
+                max_tokens=300,
+                system=system_content,  # System prompt already contains family context
+                messages=[welcome_prompt],  # Just the welcome prompt
+                temperature=0.7,
+            )
+
+            # Extract and return the response text
+            if message.content:
+                return message.content[0].text
+            else:
+                # Fallback if something goes wrong
+                return "Welcome back to our conversation about your family dynamics! What would you like to explore today?"
+
+        except Exception as e:
+            logging.error(f"Error generating welcome message: {e}")
+            # Fallback message if the API call fails
+            return "Welcome back to our conversation about your family dynamics! What would you like to explore today?"
+
     def _update_phase(self):
-        print("At the start of _update_phase")
         """Update the conversation phase based on progress."""
         # Count non-system messages
         message_count = sum(
             1 for msg in self.conversation_history if (msg["role"] != "system")
         )
-        print("message_count:", message_count)
-        print("self.current_phase:", self.current_phase)
 
         # Simple phase transitions based on message count
         if self.current_phase == "initial_data_collection" and message_count > 6:
@@ -189,7 +396,6 @@ class FamilyDynamicsConversation:
         Returns:
             str: Claude's response text or error message
         """
-        print("At the start of _call_claude_api")
         if not self.api_key:
             return "API key not configured. Please set the ANTHROPIC_API_KEY environment variable."
 
@@ -220,8 +426,6 @@ class FamilyDynamicsConversation:
                 temperature=0.7,
             )
 
-            print("Claude API response:", message)
-
             # Extract and return the response text
             if message.content:
                 return message.content[0].text
@@ -230,8 +434,10 @@ class FamilyDynamicsConversation:
 
         except Exception as e:
             logging.error(f"Error calling Claude API: {e}")
-            return "Sorry, I encountered an error while processing your message. " \
-                    "Please check the API key configuration or try again later."
+            return (
+                "Sorry, I encountered an error while processing your message. "
+                "Please check the API key configuration or try again later."
+            )
 
     def save_conversation(self, user_id: str) -> Dict[str, Any]:
         """
@@ -244,7 +450,6 @@ class FamilyDynamicsConversation:
         Returns:
             Dictionary with extraction results and save status
         """
-        print("At the start of save_conversation")
         try:
             # Extract data from the full conversation
             extracted_data = self.data_extractor.extract_from_conversation(
@@ -257,10 +462,8 @@ class FamilyDynamicsConversation:
                 "phase": self.current_phase,
                 "last_updated": datetime.now().isoformat(),
             }
-            print("extracted_data:", extracted_data)
 
             return {
-                # "success": success,
                 "data": data,
                 "extraction_status": "complete" if extracted_data else "no_data_found",
             }

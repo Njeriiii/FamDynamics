@@ -4,6 +4,104 @@ document.addEventListener("DOMContentLoaded", function () {
     const sendButton = document.getElementById("send-button");
     const voicePrompt = document.getElementById("voice-prompt");
 
+    // Check for saved data and load it if available
+    checkForSavedData();
+
+    // Function to check for saved data
+    async function checkForSavedData() {
+        try {
+            // Using the global saveManager
+            if (window.saveManager && window.saveManager.localStorageManager.hasStoredData()) {
+                console.log("Found saved conversation data");
+                
+                // Ask user if they want to continue the conversation
+                showRestoreDialog();
+            } else {
+                // No saved data, proceed with initial greeting
+                addInitialGreeting();
+            }
+        } catch (error) {
+            console.error("Error checking for saved data:", error);
+            // Proceed with initial greeting
+            addInitialGreeting();
+        }
+    }
+
+    // Function to show the restore dialog
+    function showRestoreDialog() {
+        const dialogOverlay = document.createElement('div');
+        dialogOverlay.className = 'restore-notification';
+        
+        const dialogContent = document.createElement('div');
+        dialogContent.className = 'restore-content';
+        
+        dialogContent.innerHTML = `
+            <h3>Welcome Back!</h3>
+            <p>We found a saved conversation about your family dynamics. Would you like to continue where you left off?</p>
+            <div class="restore-buttons">
+                <button id="restore-yes" class="primary-button">Yes, continue</button>
+                <button id="restore-no" class="secondary-button">No, start new</button>
+            </div>
+        `;
+        
+        dialogOverlay.appendChild(dialogContent);
+        document.body.appendChild(dialogOverlay);
+        
+        // Add event listeners
+        document.getElementById('restore-yes').addEventListener('click', async () => {
+            document.body.removeChild(dialogOverlay);
+            await loadSavedContext();
+        });
+        
+        document.getElementById('restore-no').addEventListener('click', () => {
+            document.body.removeChild(dialogOverlay);
+            addInitialGreeting();
+        });
+    }
+
+    // Function to load saved context
+    async function loadSavedContext() {
+        try {
+            // Get saved data
+            const savedData = window.saveManager.localStorageManager.loadData().data;
+            
+            if (!savedData) {
+                console.error("No saved data found");
+                addInitialGreeting();
+                return;
+            }
+            
+            // Send to backend
+            const response = await fetch("/api/load_context", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    saved_data: savedData
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.success && result.response) {
+                // Add the personalized greeting to the chat
+                addMessage(result.response, false);
+            } else {
+                // Fall back to default greeting
+                addInitialGreeting();
+            }
+            
+        } catch (error) {
+            console.error("Error loading saved context:", error);
+            addInitialGreeting();
+        }
+    }
+
     // Function to add a message to the chat history
     function addMessage(content, isUser) {
         const messageDiv = document.createElement("div");
@@ -22,6 +120,14 @@ document.addEventListener("DOMContentLoaded", function () {
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
+    // Function to add initial greeting
+    function addInitialGreeting() {
+        addMessage(
+            "Hello! I'm here to help you explore and understand your family dynamics. Let's start by learning about your family members. Could you tell me who makes up your immediate family?",
+            false
+        );
+    }
+
     // Function to send a message to the server
     async function sendMessage(message) {
         try {
@@ -32,8 +138,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify({ message }),
             });
-
-            console.log("Response:", response);
 
             if (!response.ok) {
                 throw new Error("Network response was not ok");
@@ -73,12 +177,6 @@ document.addEventListener("DOMContentLoaded", function () {
             e.preventDefault(); // Prevent default to avoid adding a newline
         }
     });
-
-    // Add initial greeting
-    addMessage(
-        "Hello! I'm here to help you explore and understand your family dynamics. Let's start by learning about your family members. Could you tell me who makes up your immediate family?",
-        false
-    );
 
     // Voice recognition
     const voiceButton = document.getElementById("voice-button") || document.createElement('button');
