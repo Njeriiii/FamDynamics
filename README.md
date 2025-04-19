@@ -79,6 +79,7 @@ family-dynamics-analyzer/
 │   ├── conversation_script.js # Handles chat interface logic
 │   ├── local_storage.js       # Manages browser storage
 │   ├── save_data.js           # Handles saving conversation data
+|   ├── ui.js                  # UX functionality
 │   └── style.css              # Application styling
 ├── templates/
 │   └── index.html             # Main application page
