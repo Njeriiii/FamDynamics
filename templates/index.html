@@ -5,34 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Family Dynamics Analyzer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="chat-container">
-        <header>
-            <h1>Family Dynamics Analyzer</h1>
-            <p>Explore and understand your family relationships through conversation</p>
-        </header>
-        
-        <div class="chat-history" id="chat-history">
-            <!-- Messages will appear here -->
-        </div>
-        
-        <div class="input-container">
-            <div class="voice-instructions">
-                <p id="voice-prompt">Click the microphone button to speak</p>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17 21V19C17 16.7909 15.2091 15 13 15H5C2.79086 15 1 16.7909 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M23 21V19C23 16.7909 21.2091 15 19 15H17.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M20 7C20 8.65685 18.6569 10 17 10C15.3431 10 14 8.65685 14 7C14 5.34315 15.3431 4 17 4C18.6569 4 20 5.34315 20 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h1 class="app-title">Family Dynamics Analyzer</h1>
             </div>
             
-            <div class="chat-input">
-                <textarea id="user-message" placeholder="Type your message here or use the microphone to speak..."></textarea>
-                <div class="input-buttons">
-                    <button id="voice-button" title="Click to speak">🎤</button>
-                    <button id="send-button">Send</button>
+            <div class="nav-menu">
+                <button class="nav-button active" id="new-conversation">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    New Conversation
+                </button>
+                <button class="nav-button" id="export-data">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 13V21M12 21L9 18M12 21L15 18M20 16.7428V8.37305C20 7.82276 19.7625 7.30437 19.3431 6.96444L13.6569 2.46444C13.2553 2.14559 12.7447 2.14559 12.3431 2.46444L6.65685 6.96444C6.23744 7.30437 6 7.82276 6 8.37305V16.7428C6 17.5738 6.39872 18.3485 7.04996 18.8165L11.646 21.8083C11.8707 21.9578 12.1293 21.9578 12.354 21.8083L16.95 18.8165C17.6013 18.3485 18 17.5738 18 16.7428V14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Export Data
+                </button>
+                <button class="nav-button" id="about-app">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 8H12.01M12 11V16M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    About
+                </button>
+            </div>
+        </div>
+    
+        <div class="main-content">
+            <div class="chat-container">
+                <header>
+                    <h2>Family Conversation</h2>
+                </header>
+                
+                <div class="chat-history" id="chat-history">
+                    <!-- Messages will appear here -->
+                </div>
+                
+                <div class="input-container">
+                    <div class="chat-input">
+                        <textarea id="user-message" placeholder="Type your message here or use the microphone to speak..."></textarea>
+                        <div class="input-buttons">
+                            <button id="voice-button" title="Click to speak" class="voice-button">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 1C11.4477 1 11 1.44772 11 2V6C11 6.55228 11.4477 7 12 7C12.5523 7 13 6.55228 13 6V2C13 1.44772 12.5523 1 12 1Z" fill="currentColor"/>
+                                    <path d="M16 6C16 3.79086 14.2091 2 12 2C9.79086 2 8 3.79086 8 6V10C8 12.2091 9.79086 14 12 14C14.2091 14 16 12.2091 16 10V6Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M18 10C18 13.3137 15.3137 16 12 16C8.68629 16 6 13.3137 6 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 16V20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M8 20H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
+                            <div class="voice-status" id="voice-prompt">Click microphone to speak</div>
+                            <button id="send-button" class="send-button">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11.5528 21.9023C11.8343 22.0323 12.1657 22.0323 12.4472 21.9023C12.7287 21.7723 12.9243 21.5347 12.979 21.2567L14.216 15H20C20.3033 15 20.5768 14.8601 20.7364 14.6287C20.8959 14.3973 20.9216 14.1028 20.8042 13.8459L16.803 4.84397C16.6845 4.58729 16.4405 4.40898 16.1604 4.36356C15.8802 4.31814 15.5927 4.41236 15.3948 4.61033L4 16.0051V17C4 18.1046 4.89543 19 6 19H9.00029L10.021 21.2613C10.0757 21.5347 10.2714 21.7723 10.5528 21.9023Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Send
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <script  src="{{ url_for('static', filename='conversation_script.js') }}"></script>
+
+    <!-- Modal for About -->
+    <div id="about-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>About Family Dynamics Analyzer</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>The Family Dynamics Analyzer is an interactive tool designed to help you explore and understand your family relationships through guided conversation.</p>
+                <p>Based on established psychological theories from experts like Murray Bowen, Salvador Minuchin, and John Gottman, this AI-powered assistant will help you:</p>
+                <ul>
+                    <li>Map your family structure</li>
+                    <li>Identify communication patterns</li>
+                    <li>Understand decision-making processes</li>
+                    <li>Explore emotional dynamics</li>
+                </ul>
+                <p>Your conversations are private and can be saved locally on your device. Use the "Save Conversation" button to store insights for future sessions.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='conversation_script.js') }}"></script>
     <script src="{{ url_for('static', filename='local_storage.js') }}"></script>
     <script src="{{ url_for('static', filename='save_data.js') }}"></script>
+    <script src="{{ url_for('static', filename='ui.js') }}"></script>
 </body>
 </html>

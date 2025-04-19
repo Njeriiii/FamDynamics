@@ -172,21 +172,42 @@ class SaveManager {
         switch (status) {
             case 'saving':
                 saveButton.disabled = true;
-                saveButton.innerHTML = '⏳ Saving...';
+                saveButton.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 21H17C19.2091 21 21 19.2091 21 17V7.58579C21 7.0544 20.7893 6.54568 20.4142 6.17072L17.8284 3.58493C17.4534 3.20996 16.9446 3 16.4142 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 3H16V8C16 8.55228 15.5523 9 15 9H9C8.44772 9 8 8.55228 8 8V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M7 21V17C7 15.8954 7.89543 15 9 15H15C16.1046 15 17 15.8954 17 17V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Saving...
+                `;
                 saveStatus.textContent = 'Saving...';
                 saveStatus.className = 'save-status';
                 break;
                 
             case 'success':
                 saveButton.disabled = false;
-                saveButton.innerHTML = '💾 Save Conversation';
+                saveButton.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 21H17C19.2091 21 21 19.2091 21 17V7.58579C21 7.0544 20.7893 6.54568 20.4142 6.17072L17.8284 3.58493C17.4534 3.20996 16.9446 3 16.4142 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 3H16V8C16 8.55228 15.5523 9 15 9H9C8.44772 9 8 8.55228 8 8V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M7 21V17C7 15.8954 7.89543 15 9 15H15C16.1046 15 17 15.8954 17 17V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Save Conversation
+                `;
                 saveStatus.textContent = message || '✓ Saved';
                 saveStatus.className = 'save-status success';
                 break;
                 
             case 'error':
                 saveButton.disabled = false;
-                saveButton.innerHTML = '💾 Save Conversation';
+                saveButton.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7 21H17C19.2091 21 21 19.2091 21 17V7.58579C21 7.0544 20.7893 6.54568 20.4142 6.17072L17.8284 3.58493C17.4534 3.20996 16.9446 3 16.4142 3H7C4.79086 3 3 4.79086 3 7V17C3 19.2091 4.79086 21 7 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 3H16V8C16 8.55228 15.5523 9 15 9H9C8.44772 9 8 8.55228 8 8V3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M7 21V17C7 15.8954 7.89543 15 9 15H15C16.1046 15 17 15.8954 17 17V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Save Conversation
+                `;
                 saveStatus.textContent = message || '✗ Error';
                 saveStatus.className = 'save-status error';
                 break;
