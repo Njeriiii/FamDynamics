@@ -32,16 +32,12 @@ class SaveManager {
      * @param {Object} data - Conversation data to save
      */
     async saveConversation(data) {
-        console.log('saveConversation called with data:', data);
-        
         // Show saving status
         this.updateSaveStatus('saving');
         
         try {
             // Extract data from conversation if not provided
             const conversationData = data;
-
-            console.log('Saving conversation data:', conversationData);
             
             if (!conversationData) {
                 console.error('No conversation data to save');
@@ -93,14 +89,12 @@ class SaveManager {
      * @param {Object} data - Data to save
      */
     saveToLocal(data) {
-        console.log('Executing saveToLocal with data:', data);
         try {
             const result = this.localStorageManager.saveData({
                 extracted_data: data.data?.extracted_data || {},
                 phase: data.data?.phase || '',
                 timestamp: new Date().toISOString()
             });
-            console.log('Local storage save result:', result);
             return result;
         } catch (error) {
             console.error('Error in saveToLocal:', error);
@@ -112,38 +106,13 @@ class SaveManager {
     /**
      * Save data to cloud (placeholder)
      * @param {Object} data - Data to save
+     * 
+     * This function is a placeholder and should be replaced with actual API calls
      */
     async saveToCloud(data) {
-        console.log('saveToCloud initiated');
-        try {
-            const response = await fetch('/api/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            console.log('Cloud save response:', response);
-            
-            if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            console.log('Cloud save result:', result);
-            
-            return {
-                success: result.extraction_status === 'complete',
-                message: result.extraction_status === 'complete' ? 'Saved to cloud' : 'Failed to save',
-                error: result.error
-            };
-        } catch (error) {
-            console.error('Cloud save error:', error);
-            return {
-                success: false,
-                error: `Cloud save failed: ${error.message}`
-            };
-        }
+        
+        // TODO: Implement cloud save logic
+        
     }
     
     /**
@@ -151,9 +120,7 @@ class SaveManager {
      * @param {string} status - Status type ('saving', 'success', 'error')
      * @param {string} message - Message to display
      */
-    updateSaveStatus(status, message = '') {
-        console.log(`updateSaveStatus called: ${status}, ${message}`);
-        
+    updateSaveStatus(status, message = '') {        
         const saveButton = document.getElementById('save-conversation-button');
         const saveStatus = document.getElementById('save-status');
         
@@ -165,10 +132,7 @@ class SaveManager {
         if (!saveStatus) {
             console.error('Save status element not found in DOM');
             return;
-        }
-        
-        console.log('Updating UI elements with status:', status);
-        
+        }        
         switch (status) {
             case 'saving':
                 saveButton.disabled = true;
@@ -217,7 +181,6 @@ class SaveManager {
         if (status !== 'saving') {
             setTimeout(() => {
                 if (saveStatus) {
-                    console.log('Clearing status text after timeout');
                     saveStatus.textContent = '';
                 }
             }, 5000);
@@ -250,11 +213,8 @@ class SaveManager {
                 console.log('Using default storage (local)');
                 storedData = this.localStorageManager.loadData();
             }
-            
-            console.log('Retrieved stored data:', storedData);
-            
+                        
             if (!storedData.data) {
-                console.log('No stored data found, proceeding with normal conversation');
                 return { success: false, message: 'No saved data found' };
             }
             
@@ -269,15 +229,11 @@ class SaveManager {
             })
             });
             
-            console.log('Backend response status:', response.status);
-            
             if (!response.ok) {
             throw new Error(`Server responded with status: ${response.status}`);
             }
             
             const result = await response.json();
-            console.log('Load context result:', result);
-            
             return result;
             
         } catch (error) {
@@ -289,11 +245,9 @@ class SaveManager {
      * Initialize the Save button in the UI
      */
     initializeSaveButton() {
-        console.log('Initializing save button');
         
         // Check if button already exists
         if (document.getElementById('save-conversation-button')) {
-            console.log('Save button already exists, skipping initialization');
             return;
         }
         
@@ -320,7 +274,6 @@ class SaveManager {
         // Add container to the page - before the input container
         const inputContainer = document.querySelector('.input-container');
         if (inputContainer) {
-            console.log('Adding save button before input container');
             inputContainer.parentNode.insertBefore(saveButtonContainer, inputContainer);
         } else {
             console.warn('Input container not found, appending to body');
@@ -329,11 +282,8 @@ class SaveManager {
         
         // Add event listener
         saveButton.addEventListener('click', () => {
-            console.log('Save button clicked');
             this.handleSaveButtonClick();
         });
-        
-        console.log('Save button initialized');
     }
     
     /**
@@ -341,13 +291,12 @@ class SaveManager {
      * This calls the appropriate save method based on storage type
      */
     async handleSaveButtonClick() {
-        console.log('handleSaveButtonClick triggered');
         this.updateSaveStatus('saving');
         
         try {
             if (this.storageType === 'cloud') {
                 // For cloud storage, call API directly and process response
-                console.log('Cloud storage selected, calling saveToCloud');
+                
                 const result = await this.saveToCloud();
                 
                 if (result.success) {
@@ -357,7 +306,6 @@ class SaveManager {
                 }
             } else {
                 // For local/session storage, we need to get the data from the server first
-                console.log('Local/session storage selected, fetching data from server');
                 this.updateSaveStatus('saving', 'Fetching data...');
                 
                 const response = await fetch('/api/save', {
@@ -367,19 +315,15 @@ class SaveManager {
                     }
                 });
                 
-                console.log('Server response status:', response.status);
-                
                 if (!response.ok) {
                     throw new Error(`Server responded with status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Data received from server:', data);
                 
                 // Process the data with our local save methods
                 if (data.extraction_status === 'complete') {
                     // Save the extracted data locally
-                    console.log('Extraction complete, saving locally');
                     await this.saveConversation(data);
                 } else {
                     console.error('Extraction failed:', data.error);
@@ -398,7 +342,6 @@ window.saveManager = new SaveManager();
 
 // Initialize when the DOM is loaded
 document.addEventListener("DOMContentLoaded", async function() {
-    console.log('DOM loaded, initializing SaveManager');
     
     const saveManager = window.saveManager;
     

@@ -44,7 +44,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 // First, clear localStorage data
                 if (window.saveManager && window.saveManager.localStorageManager) {
                     window.saveManager.localStorageManager.clearData();
-                    console.log("Local storage data cleared");
                 }
                 
                 // Then reset the conversation on the server
@@ -127,7 +126,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Add event listener to trigger the save manager
             freshSaveButton.addEventListener("click", async function() {
-                console.log("Save button clicked, calling save manager");
                 
                 try {
                     // Use the existing save functionality from save_data.js
@@ -150,7 +148,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
             
-            console.log("Save button event listener attached");
         } else {
             console.warn("Save button or save manager not available");
         }

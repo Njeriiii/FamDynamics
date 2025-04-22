@@ -16,8 +16,6 @@ class LocalStorageManager {
         // Storage keys
         this.FAMILY_DATA_KEY = 'fda_family_data';
         this.PHASE_KEY = 'fda_conversation_phase';
-        
-        console.log(`LocalStorageManager initialized. localStorage available: ${this.storageAvailable}`);
     }
     
     /**
@@ -118,8 +116,6 @@ class LocalStorageManager {
             clientId: this.clientId,
             timestamp: new Date().toISOString()
         };
-
-        console.log('Saving data to storage:', dataToSave);
         
         try {
             // Try localStorage first if available

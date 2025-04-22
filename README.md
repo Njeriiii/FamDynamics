@@ -104,7 +104,13 @@ family-dynamics-analyzer/
      - Family dynamics (communication patterns, decision-making)
      - Significant events (conflicts, transitions)
 
-3. **Theoretical Framework**:
+3. **Data Saving**:
+   - Users have the option to save data to LocalStorage.
+   - At the next use of the app, users are prompted if they would like the conversation to proceed with prior context.
+   - If not, a new conversation is started and all previously saved data is ERASED.
+
+
+4. **Theoretical Framework**:
    - The AI assistant draws from established psychological theories to offer insights
    - Responses reference Adler, Bowen, Bowlby, Minuchin, and other family systems theorists
    - Information is presented in an educational, non-diagnostic manner
@@ -119,7 +125,7 @@ family-dynamics-analyzer/
 
 ## Privacy and Data Security
 - All conversation data is processed using Claude AI through the Anthropic API
-- Family information can be stored locally in your browser but is not sent to any third-party servers
+- Family information can be stored locally in your browser but is NOT SENT TO ANY THIRD-PARTY SERVERS
 - No user accounts or persistent identifiers are required
 - The application does not collect or store analytics data
 
@@ -132,3 +138,6 @@ family-dynamics-analyzer/
 
 - This project uses [Anthropic's Claude AI](https://www.anthropic.com/) for natural language processing
 - Psychological frameworks based on established family systems theories
+
+Live Version: https://famdynamics.onrender.com/
+![Screenshot of the web interface of the project. ](image.png)

@@ -11,9 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     async function checkForSavedData() {
         try {
             // Using the global saveManager
-            if (window.saveManager && window.saveManager.localStorageManager.hasStoredData()) {
-                console.log("Found saved conversation data");
-                
+            if (window.saveManager && window.saveManager.localStorageManager.hasStoredData()) {                
                 // Ask user if they want to continue the conversation
                 showRestoreDialog();
             } else {
@@ -245,6 +243,5 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
         voiceButton.style.display = 'none';
         voicePrompt.style.display = 'none';
-        console.log('Speech recognition not supported');
     }
 });

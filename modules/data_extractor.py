@@ -49,7 +49,6 @@ class FamilyDataExtractor:
             # Update the internal family data
             self._update_family_data(new_data)
 
-            print("new_data", new_data)
             return new_data
 
         except Exception as e:
@@ -147,7 +146,6 @@ class FamilyDataExtractor:
             if response.content:
                 extraction_response = response.content[0].text
 
-            print("extraction_response", extraction_response)
             return extraction_response
 
         except Exception as e:
