@@ -230,9 +230,9 @@ class FamilyDataExtractor:
         """
         # Try to find matching member by name first
         if "name" in new_member and new_member["name"]:
-            name = new_member["name"].lower()
+            name = new_member["name"]
             for i, member in enumerate(self.family_data["family_members"]):
-                if member.get("name", "").lower() == name:
+                if member.get("name", "") == name:
                     # Merge attributes, but don't overwrite existing ones
                     for key, value in new_member.items():
                         if key not in member:
@@ -248,9 +248,9 @@ class FamilyDataExtractor:
 
         # If no match by name, try to match by role
         if "role" in new_member and new_member["role"]:
-            role = new_member["role"].lower()
+            role = new_member["role"]
             for i, member in enumerate(self.family_data["family_members"]):
-                if member.get("role", "").lower() == role and "name" not in member:
+                if member.get("role", "") == role and "name" not in member:
                     # Found a match by role, merge the records
                     for key, value in new_member.items():
                         if key not in member:
