@@ -2,6 +2,8 @@
 
 An interactive conversational application that helps users explore and understand their family dynamics through guided conversation powered by Claude AI.
 
+### [Try it out!](https://famdynamics.onrender.com/)
+
 ## Project Overview
 
 The Family Dynamics Analyzer is a web-based chatbot that conducts a structured interview about a user's family relationships and dynamics. Using Claude AI, the application guides users through a conversation that systematically explores:
@@ -139,5 +141,4 @@ family-dynamics-analyzer/
 - This project uses [Anthropic's Claude AI](https://www.anthropic.com/) for natural language processing
 - Psychological frameworks based on established family systems theories
 
-Live Version: https://famdynamics.onrender.com/
 ![Screenshot of the web interface of the project. ](image.png)
